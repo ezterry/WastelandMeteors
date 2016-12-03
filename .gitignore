@@ -1,0 +1,14 @@
+*~
+/eclipse/*
+/.gradle/*
+/.classpath
+/.project
+/.settings
+/.idea
+/bin/*
+/run/*
+/build/*
+ezwasteland_Client.launch
+ezwasteland_Server.launch
+/test/*
+/bin/

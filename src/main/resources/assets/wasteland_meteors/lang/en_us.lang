@@ -1,0 +1,15 @@
+#block names
+tile.wasteland_meteors:meteor_block.name=Meteor Block
+tile.wasteland_meteors:meteor_slab.name=Meteor Block Slab
+tile.wasteland_meteors:meteor_stairs.name=Meteor Block Stairs
+
+#surface config
+config.ezwastelands.surfacemeteor.configtitle=Surface Meteors
+config.ezwastelands.surfacemeteor.enable.name=Enable
+config.wasteland_meteors.surfacemeteor.enable.help=Generate Meteors on the surface
+config.ezwastelands.surfacemeteor.frequency.name=Frequency
+config.wasteland_meteors.surfacemeteor.frequency.help=How frequent are meteors
+config.ezwastelands.surfacemeteor.exponent.name=Exponent
+config.wasteland_meteors.surfacemeteor.exponent.help=How steep is the craters
+config.ezwastelands.surfacemeteor.scale.name=scale
+config.wasteland_meteors.surfacemeteor.scale.help=Size range of the meteors

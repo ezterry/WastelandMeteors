@@ -1,0 +1,8 @@
+{
+  "parent": "block/outer_stairs",
+  "textures": {
+    "bottom": "wasteland_meteors:blocks/meteor_block",
+    "top": "wasteland_meteors:blocks/meteor_block",
+    "side": "wasteland_meteors:blocks/meteor_block"
+  }
+}

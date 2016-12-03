@@ -1,0 +1,9 @@
+{
+  "variants": {
+    "half=bottom,variant=default": { "model": "wasteland_meteors:meteor_slab" },
+    "half=top,variant=default": { "model": "wasteland_meteors:upper_slab_meteor" },
+    "normal": [
+      { "model": "wasteland_meteors:meteor_slab" }
+    ]
+  }
+}

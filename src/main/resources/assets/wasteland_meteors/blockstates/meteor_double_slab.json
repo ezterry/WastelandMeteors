@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "variant=default": { "model": "wasteland_meteors:meteor_block" }
+  }
+}

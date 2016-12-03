@@ -1,0 +1,16 @@
+[
+{
+  "modid": "wasteland_meteors",
+  "name": "Wasteland Meteors",
+  "description": "Addon to EzWastelands to spawn ore filled meteors",
+  "version": "${version}",
+  "mcversion": "1.11",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["EzTerry"],
+  "credits": "meteors in the wastelands",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

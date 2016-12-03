@@ -1,0 +1,6 @@
+{
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "wasteland_meteors:blocks/meteor_block"
+  }
+}
