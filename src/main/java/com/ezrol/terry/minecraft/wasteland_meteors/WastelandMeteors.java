@@ -32,7 +32,7 @@ import java.io.File;
         name = "Wasteland  Meteors",
         version = WastelandMeteors.VERSION,
         acceptedMinecraftVersions = "[1.11]",
-        dependencies = "required-after:ezwastelands")
+        dependencies = "required-after:ezwastelands@[1.11-1.2,)")
 public class WastelandMeteors
 {
     public static final String MODID = "wasteland_meteors";
