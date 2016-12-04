@@ -2,23 +2,21 @@ package com.ezrol.terry.minecraft.wasteland_meteors.gen;
 
 import com.ezrol.terry.minecraft.wasteland_meteors.ConfigurationReader;
 import com.ezrol.terry.minecraft.wasteland_meteors.WastelandMeteors;
-import com.ezrol.terry.minecraft.wasteland_meteors.WeakCache;
 import com.ezrol.terry.minecraft.wastelands.api.IRegionElement;
 import com.ezrol.terry.minecraft.wastelands.api.Param;
 import com.ezrol.terry.minecraft.wastelands.api.RegionCore;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.chunk.IChunkGenerator;
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.common.DimensionManager;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.WeakHashMap;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.pow;
@@ -27,22 +25,20 @@ import static java.lang.Math.pow;
  * Created by ezterry on 12/1/16.
  */
 public class SurfaceMeteors implements IRegionElement {
-    WeakCache cache;
     ConfigurationReader ModConfig;
 
 
     private class meteorLocation {
         int x;
-        int y;
         int z;
         int scale;
         float exponent;
+        short direction;
     }
 
 
     public SurfaceMeteors(ConfigurationReader c) {
         RegionCore.register(this, true);
-        cache = new WeakCache(25*8);
         ModConfig=c;
     }
 
@@ -50,16 +46,86 @@ public class SurfaceMeteors implements IRegionElement {
     public int addElementHeight(int currentoffset, int x, int z, RegionCore core, List<Object> elements){
         int offset=currentoffset;
         int localoffset;
-        int area_of_inf; //area of influence
-        int distx;
-        int distz;
+        float area_of_inf; //area of influence
+        float distx;
+        float distz;
         float dist;
 
         for(Object o : elements ){
             meteorLocation m = ((meteorLocation)o);
             area_of_inf = ((m.scale+3)*4);
-            distx=abs(x-m.x);
-            distz=abs(z-m.z);
+            distx=x-m.x;
+            distz=z-m.z;
+
+            if(distx < 0){
+                switch(m.direction){
+                    case 1:
+                    case 2:
+                    case 5:
+                        distx *= -1.25;
+                        break;
+                    case 3:
+                    case 4:
+                    case 6:
+                        distx *= -0.75;
+                        break;
+                    default:
+                        distx *= -1;
+                        break;
+                }
+            }
+            else{
+                switch(m.direction){
+                    case 1:
+                    case 2:
+                    case 5:
+                        distx *= 0.75;
+                        break;
+                    case 3:
+                    case 4:
+                    case 6:
+                        distx *= 1.25;
+                        break;
+                    default:
+                        distx *= 1;
+                        break;
+                }
+            }
+            if(distz < 0){
+                switch(m.direction){
+                    case 2:
+                    case 3:
+                    case 7:
+                        distz *= -1.25;
+                        break;
+                    case 1:
+                    case 4:
+                    case 8:
+                        distz *= -0.75;
+                        break;
+                    default:
+                        distz *= -1;
+                        break;
+                }
+            }
+            else{
+                switch(m.direction){
+                    case 2:
+                    case 3:
+                    case 7:
+                        distz *= 0.75;
+                        break;
+                    case 1:
+                    case 4:
+                    case 8:
+                        distz *= 1.25;
+                        break;
+                    default:
+                        distz *= 1;
+                        break;
+                }
+            }
+
             if(distx<= area_of_inf && distz<=area_of_inf){
                 //we need to consider this point
                 dist = (float) Math.sqrt((distx * distx) + (distz * distz));
@@ -68,9 +134,6 @@ public class SurfaceMeteors implements IRegionElement {
                 localoffset += (int)dist;
                 if(localoffset < offset){
                     offset=localoffset;
-                }
-                if(m.x == x && m.z == z){
-                    m.y=localoffset;
                 }
             }
         }
@@ -137,11 +200,10 @@ public class SurfaceMeteors implements IRegionElement {
                 meteorLocation obj = new meteorLocation();
                 obj.x = random.nextInt(64) + (x<<6);
                 obj.z = random.nextInt(64) + (z<<6);
-                obj.y = 0;
                 obj.scale = random.nextInt(scale) + 3;
                 obj.exponent = exponent;
+                obj.direction = (short) random.nextInt(9);
                 lst.add(obj);
-                cache.addObject(obj);
             }
         }
         return lst;
@@ -151,7 +213,7 @@ public class SurfaceMeteors implements IRegionElement {
         Random r;
         long localSeed;
 
-        localSeed = (x << 33) + (z * 31);
+        localSeed = ((long)x << 33) + (z * 31);
         localSeed = localSeed ^ seed;
         localSeed += 5147;
 
@@ -166,41 +228,55 @@ public class SurfaceMeteors implements IRegionElement {
         int distx;
         int disty;
         int distz;
+        int m_y;
         float f;
+        World world=null;
         Random rand;
         IBlockState meteor = WastelandMeteors.meteorBlock.getDefaultState();
         IBlockState curblock;
 
         scale+=3;
-        for(Object o : cache.currentList()){
+
+        boolean found=false;
+        for(int id : DimensionManager.getIDs()){
+            world = DimensionManager.getWorld(id);
+            if(world.getSeed() == worldSeed){
+                found=true;
+                break;
+            }
+        }
+        if(!found){
+            //we have the wrong object return without generating metors
+            return;
+        }
+        for(Object o : core.getRegionElements(x,z,this, world)){
             meteorLocation m = ((meteorLocation)o);
             distx=abs(x-m.x);
             distz=abs(z-m.z);
             if(distx <= scale && distz <= scale){
                 rand=fillRNG(x,z,worldSeed);
-                if(m.y==0){
-                    //force the height lookup (again?)
-                    core.addElementHeight(52,m.x,m.z,worldSeed);
+                m_y=core.addElementHeight(52,m.x,m.z,worldSeed);
+                if(m_y==0){
+                    //we didn't get the update
+                    continue;
                 }
-                for(int y=m.y-scale;y<m.y+scale;y++){
+                for(int y=m_y-scale;y<m_y+scale;y++){
                     if(y>=256 || y<0){
                         continue;
                     }
-                    disty=abs(y-m.y);
+                    disty=abs(y-m_y);
                     f=(float) Math.sqrt((distx * distx) + (disty * disty) + (distz * distz));
-                    if(f < m.scale+0.5){
+                    if(f < m.scale+0.8){
                         curblock=meteor;
-                        if(f <( m.scale-1.0)){
+                        if(f <( m.scale-0.8)){
                             curblock = ModConfig.getSurfaceBlock(rand);
                         }
-
                         chunkprimer.setBlockState(x & 0x0F, y, z & 0x0F, curblock);
                     }
                 }
 
             }
         }
-
     }
 
     @Override
