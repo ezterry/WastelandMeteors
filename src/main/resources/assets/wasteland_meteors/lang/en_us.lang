@@ -13,3 +13,15 @@ config.ezwastelands.surfacemeteor.exponent.name=Exponent
 config.wasteland_meteors.surfacemeteor.exponent.help=How steep is the craters
 config.ezwastelands.surfacemeteor.scale.name=Scale
 config.wasteland_meteors.surfacemeteor.scale.help=Size range of the meteors
+
+#underground config (undergroundmeteor)
+config.ezwastelands.undergroundmeteor.configtitle=Underground Meteors
+config.ezwastelands.undergroundmeteor.enable.name=Enable
+config.wasteland_meteors.undergroundmeteor.enable.help=Generate Meteors underground
+config.ezwastelands.undergroundmeteor.frequency.name=Frequency
+config.wasteland_meteors.undergroundmeteor.frequency.help=How frequent are meteors
+config.ezwastelands.undergroundmeteor.scale.name=Scale
+config.wasteland_meteors.undergroundmeteor.scale.help=Size range of the meteors
+
+#preset config
+presets.wasteland_meteors.meteorvillage.name=Meteor Village

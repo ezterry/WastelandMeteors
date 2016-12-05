@@ -1,0 +1,6 @@
+# Preset for meteor addon
+
+#Meteors Village
+presets.wasteland_meteors.meteorvillage.name
+wasteland_meteors:presets/meteorvillage.png
+{"terrainvariation":{"amplification":24,"variation":2},"domes":{"lgmincount":3,"lgmaxcount":6,"lgradius":41,"lgheight":7,"midmincount":2,"midmaxcount":12,"midradius":18,"midheight":6,"smmincount":2,"smmaxcount":5,"smradius":10,"smheight":5},"shallows":{"mincount":3,"maxcount":9,"radius":49,"depth":4},"spire":{"count":3,"size":4},"randopts":{"oceans":true,"globaloffset":-4,"integration":true,"villages":true,"villagechance":44.366196,"strongholds":true},"surfacemeteor":{"enable":true,"frequency":0.73,"exponent":0.92,"scale":2},"undergroundmeteor":{"enable":true,"frequency":0.65,"scale":6}}

@@ -2,7 +2,9 @@ package com.ezrol.terry.minecraft.wasteland_meteors;
 
 import com.ezrol.terry.minecraft.wasteland_meteors.blocks.*;
 import com.ezrol.terry.minecraft.wasteland_meteors.gen.SurfaceMeteors;
+import com.ezrol.terry.minecraft.wasteland_meteors.gen.UndergroundMeteors;
 import com.ezrol.terry.minecraft.wastelands.EzWastelands;
+import com.ezrol.terry.minecraft.wastelands.api.RegionCore;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockPurpurSlab;
 import net.minecraft.block.BlockSlab;
@@ -10,7 +12,6 @@ import net.minecraft.block.BlockStairs;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemSlab;
@@ -20,7 +21,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.relauncher.Side;
@@ -129,5 +129,9 @@ public class WastelandMeteors
 
         //init/register terrain generators
         new SurfaceMeteors(config);
+        new UndergroundMeteors(config);
+
+        //register our custom presets
+        RegionCore.registerPreset(new ResourceLocation(MODID, "presets/list.txt"));
     }
 }
