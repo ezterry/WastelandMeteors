@@ -11,5 +11,5 @@ config.ezwastelands.surfacemeteor.frequency.name=Frequency
 config.wasteland_meteors.surfacemeteor.frequency.help=How frequent are meteors
 config.ezwastelands.surfacemeteor.exponent.name=Exponent
 config.wasteland_meteors.surfacemeteor.exponent.help=How steep is the craters
-config.ezwastelands.surfacemeteor.scale.name=scale
+config.ezwastelands.surfacemeteor.scale.name=Scale
 config.wasteland_meteors.surfacemeteor.scale.help=Size range of the meteors

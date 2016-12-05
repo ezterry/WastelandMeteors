@@ -6,7 +6,6 @@ import com.ezrol.terry.minecraft.wastelands.api.IRegionElement;
 import com.ezrol.terry.minecraft.wastelands.api.Param;
 import com.ezrol.terry.minecraft.wastelands.api.RegionCore;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
@@ -25,8 +24,8 @@ import static java.lang.Math.pow;
  * Created by ezterry on 12/1/16.
  */
 public class SurfaceMeteors implements IRegionElement {
-    ConfigurationReader ModConfig;
-
+    private ConfigurationReader ModConfig;
+    private World world=null;
 
     private class meteorLocation {
         int x;
@@ -159,7 +158,7 @@ public class SurfaceMeteors implements IRegionElement {
                 0.90f,0.7f,1.5f));
         lst.add(new Param.IntegerParam("scale",
                 "config.wasteland_meteors.surfacemeteor.scale.help",
-                1,0,4));
+                3,0,5));
         return lst;
     }
 
@@ -222,6 +221,29 @@ public class SurfaceMeteors implements IRegionElement {
         r.nextInt();
         return (r);
     }
+
+    private void findWorld(long seed){
+        boolean found=false;
+        World check;
+        if(world != null && world.getSeed() == seed){
+            return;
+        }
+        check = DimensionManager.getWorld(0);
+        if(check.getSeed() == seed){
+            world = check;
+        }
+        if(world != null && world.getSeed() == seed){
+            return;
+        }
+        for(int id : DimensionManager.getIDs()){
+            check = DimensionManager.getWorld(id);
+            if(check.getSeed() == seed){
+                world = check;
+
+            }
+        }
+    }
+
     @Override
     public void postFill(ChunkPrimer chunkprimer, int height, int x, int z, long worldSeed, List<Param> p, RegionCore core) {
         int scale = ((Param.IntegerParam)Param.lookUp(p, "scale")).get();
@@ -230,25 +252,17 @@ public class SurfaceMeteors implements IRegionElement {
         int distz;
         int m_y;
         float f;
-        World world=null;
         Random rand;
         IBlockState meteor = WastelandMeteors.meteorBlock.getDefaultState();
-        IBlockState curblock;
+        IBlockState curBlock;
 
         scale+=3;
+        findWorld(worldSeed);
 
-        boolean found=false;
-        for(int id : DimensionManager.getIDs()){
-            world = DimensionManager.getWorld(id);
-            if(world.getSeed() == worldSeed){
-                found=true;
-                break;
-            }
+        if(world == null){
+            return; //can't find world thus can't generate items
         }
-        if(!found){
-            //we have the wrong object return without generating metors
-            return;
-        }
+
         for(Object o : core.getRegionElements(x,z,this, world)){
             meteorLocation m = ((meteorLocation)o);
             distx=abs(x-m.x);
@@ -267,11 +281,11 @@ public class SurfaceMeteors implements IRegionElement {
                     disty=abs(y-m_y);
                     f=(float) Math.sqrt((distx * distx) + (disty * disty) + (distz * distz));
                     if(f < m.scale+0.8){
-                        curblock=meteor;
+                        curBlock=meteor;
                         if(f <( m.scale-0.8)){
-                            curblock = ModConfig.getSurfaceBlock(rand);
+                            curBlock = ModConfig.getSurfaceBlock(rand);
                         }
-                        chunkprimer.setBlockState(x & 0x0F, y, z & 0x0F, curblock);
+                        chunkprimer.setBlockState(x & 0x0F, y, z & 0x0F, curBlock);
                     }
                 }
 

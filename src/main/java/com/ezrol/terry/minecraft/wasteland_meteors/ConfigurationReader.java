@@ -76,29 +76,32 @@ public class ConfigurationReader {
         JsonArray  surface = new JsonArray();
         JsonArray  underground = new JsonArray();
 
+        surface.add(blockentry("minecraft:cobblestone","",40));
+        surface.add(blockentry("wasteland_meteors:meteor_block","",40));
         surface.add(blockentry("minecraft:stone","variant=andesite",30));
         surface.add(blockentry("minecraft:stone","variant=granite",30));
         surface.add(blockentry("minecraft:stone","variant=diorite",30));
-        surface.add(blockentry("minecraft:cobblestone","",40));
-        surface.add(blockentry("wasteland_meteors:meteor_block","",50));
         surface.add(blockentry("minecraft:coal_ore","",20));
         surface.add(blockentry("minecraft:iron_ore","",18));
         surface.add(blockentry("minecraft:gravel","",10));
         surface.add(blockentry("minecraft:sand","",10));
+        surface.add(blockentry("minecraft:ice","",10));
         surface.add(blockentry("minecraft:gold_ore","",6));
         surface.add(blockentry("minecraft:lapis_ore","",5));
+        surface.add(blockentry("minecraft:packed_ice","",3));
         surface.add(blockentry("minecraft:diamond_ore","",2));
         surface.add(blockentry("minecraft:emerald_ore","",1));
 
+        underground.add(blockentry("minecraft:coal_ore","",36));
+        underground.add(blockentry("minecraft:iron_ore","",36));
         underground.add(blockentry("minecraft:dirt","",20));
         underground.add(blockentry("minecraft:cobblestone","",20));
         underground.add(blockentry("wasteland_meteors:meteor_block","",20));
-        underground.add(blockentry("minecraft:coal_ore","",36));
-        underground.add(blockentry("minecraft:iron_ore","",36));
         underground.add(blockentry("minecraft:gravel","",20));
         underground.add(blockentry("minecraft:sand","",20));
         underground.add(blockentry("minecraft:gold_ore","",12));
         underground.add(blockentry("minecraft:lapis_ore","",10));
+        underground.add(blockentry("minecraft:obsidian","",9));
         underground.add(blockentry("minecraft:diamond_ore","",8));
         underground.add(blockentry("minecraft:emerald_ore","",4));
 
