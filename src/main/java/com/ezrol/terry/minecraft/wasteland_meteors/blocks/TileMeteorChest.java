@@ -152,10 +152,9 @@ public class TileMeteorChest extends TileEntityLockableLoot implements ITickable
                     this.world.rand.nextFloat() * 0.1F + 0.9F);
         }
 
+        this.lastLidAngle = this.lidAngle;
         if (this.numPlayersUsing == 0 && this.lidAngle > 0.0F || this.numPlayersUsing > 0 && this.lidAngle < 1.0F)
         {
-            lastLidAngle = this.lidAngle;
-
             if (this.numPlayersUsing > 0)
             {
                 this.lidAngle += 0.1F;
@@ -170,7 +169,7 @@ public class TileMeteorChest extends TileEntityLockableLoot implements ITickable
                 this.lidAngle = 1.0F;
             }
 
-            if (this.lidAngle < 0.5F && lastLidAngle >= 0.5F)
+            if (this.lidAngle < 0.5F && this.lastLidAngle >= 0.5F)
             {
                 this.world.playSound(null, (double)posX + 0.5D, (double)posY + 0.5D, (double)posZ + 0.5D,
                         SoundEvents.BLOCK_CHEST_CLOSE, SoundCategory.BLOCKS, 0.5F,
@@ -208,7 +207,18 @@ public class TileMeteorChest extends TileEntityLockableLoot implements ITickable
                 this.numPlayersUsing = 0;
             }
 
-            ++this.numPlayersUsing;
+            this.numPlayersUsing++;
+            this.world.addBlockEvent(this.pos, this.getBlockType(), 1, this.numPlayersUsing);
+            this.world.notifyNeighborsOfStateChange(this.pos, this.getBlockType(), false);
+        }
+    }
+
+    @Override
+    public void closeInventory(EntityPlayer player)
+    {
+        if (!player.isSpectator() && this.getBlockType() instanceof MeteorChest)
+        {
+            this.numPlayersUsing--;
             this.world.addBlockEvent(this.pos, this.getBlockType(), 1, this.numPlayersUsing);
             this.world.notifyNeighborsOfStateChange(this.pos, this.getBlockType(), false);
         }
