@@ -2,6 +2,7 @@
 tile.wasteland_meteors:meteor_block.name=Meteor Block
 tile.wasteland_meteors:meteor_slab.name=Meteor Block Slab
 tile.wasteland_meteors:meteor_stairs.name=Meteor Block Stairs
+tile.wasteland_meteors:meteor_chest.name=Meteor Chest
 
 #surface config
 config.ezwastelands.surfacemeteor.configtitle=Surface Meteors
@@ -22,6 +23,9 @@ config.ezwastelands.undergroundmeteor.frequency.name=Frequency
 config.wasteland_meteors.undergroundmeteor.frequency.help=How frequent are meteors
 config.ezwastelands.undergroundmeteor.scale.name=Scale
 config.wasteland_meteors.undergroundmeteor.scale.help=Size range of the meteors
+
+#Meteor Chest Gui
+wasteland_meteors.container.meteorchest=Meteor Chest
 
 #preset config
 presets.wasteland_meteors.meteorvillage.name=Meteor Village
