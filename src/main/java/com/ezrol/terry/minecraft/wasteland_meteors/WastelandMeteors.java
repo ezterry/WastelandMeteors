@@ -147,7 +147,6 @@ public class WastelandMeteors implements IGuiHandler
                     new ModelResourceLocation(MODID + ":" + "meteor_block","inventory"));
             renderItem.getItemModelMesher().register(Item.getItemFromBlock(meteorChest), 0,
                     new ModelResourceLocation(MODID + ":" + "meteor_chest","inventory"));
-
         }
 
         //Register slab recipe
@@ -157,7 +156,7 @@ public class WastelandMeteors implements IGuiHandler
         GameRegistry.addRecipe(new ItemStack(Item.getItemFromBlock(meteorBlockStairs),4),
                 "b  ","bb ","bbb",'b',Item.getItemFromBlock(meteorBlock));
         //Register chest recipe
-        GameRegistry.addRecipe(new ItemStack(Item.getItemFromBlock(meteorChest),4),
+        GameRegistry.addRecipe(new ItemStack(Item.getItemFromBlock(meteorChest),1),
                 "bbb","b b","bbb",'b',Item.getItemFromBlock(meteorBlock));
 
         //process the configuration

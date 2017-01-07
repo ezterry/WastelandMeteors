@@ -36,14 +36,7 @@ public class TileMeteorChestRenderer extends TileEntitySpecialRenderer<TileMeteo
 
         if (te.hasWorld())
         {
-            Block block = te.getBlockType();
             meta = te.getBlockMetadata();
-
-            if (block instanceof BlockChest && meta == 0)
-            {
-                ((BlockChest)block).checkForSurroundingChests(te.getWorld(), te.getPos(), te.getWorld().getBlockState(te.getPos()));
-                meta = te.getBlockMetadata();
-            }
         }
         else
         {
@@ -61,8 +54,9 @@ public class TileMeteorChestRenderer extends TileEntitySpecialRenderer<TileMeteo
             GlStateManager.translate(0.0625F, 0.0625F, 0.0625F);
             GlStateManager.matrixMode(5888);
         }
-        this.bindTexture(TEXTURE_METEOR_CHEST);
-
+        else {
+            this.bindTexture(TEXTURE_METEOR_CHEST);
+        }
         GlStateManager.pushMatrix();
         GlStateManager.enableRescaleNormal();
 

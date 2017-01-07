@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=south": {
+      "model": "wasteland_meteors:meteor_chest"
+    },
+    "facing=north": {
+      "model": "wasteland_meteors:meteor_chest"
+    },
+    "facing=east": {
+      "model": "wasteland_meteors:meteor_chest"
+    },
+    "facing=west": {
+      "model": "wasteland_meteors:meteor_chest"
+    }
+  }
+}

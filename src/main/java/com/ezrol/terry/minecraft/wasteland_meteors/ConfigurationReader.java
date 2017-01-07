@@ -3,9 +3,13 @@ package com.ezrol.terry.minecraft.wasteland_meteors;
 import com.google.gson.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.server.CommandSetBlock;
+import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
@@ -24,18 +28,39 @@ public class ConfigurationReader {
     private ArrayList<BlockEntry> undergroundBlocks = new ArrayList<>();
     private long totalUndergroundWeight = 0;
 
-    private static class BlockEntry{
+    public static class BlockEntry{
         private IBlockState blockstate;
+        private NBTTagCompound nbt=null;
         private int weight;
 
-        private BlockEntry(Block block, String meta, int weight) throws NumberInvalidException, InvalidBlockStateException {
+        private BlockEntry(Block block, String meta, String nbt, int weight) throws NumberInvalidException, InvalidBlockStateException {
             if(! meta.equals("")) {
                 blockstate = CommandSetBlock.convertArgToBlockState(block, meta);
             }
             else{
                 blockstate = block.getDefaultState();
             }
+
+            if(! nbt.equals("")){
+                try
+                {
+                    this.nbt = JsonToNBT.getTagFromJson(nbt);
+                }
+                catch (NBTException nbtexception)
+                {
+                    FMLLog.log("wasteland_meteors", Level.WARN,
+                            "Error reading NBT data: " + nbtexception.toString());
+                }
+            }
             this.weight = weight;
+        }
+
+        public IBlockState getBlockState(){
+            return this.blockstate;
+        }
+
+        public NBTTagCompound getNbtData(){
+            return this.nbt;
         }
     }
     public ConfigurationReader(File jsonpath){
@@ -69,6 +94,14 @@ public class ConfigurationReader {
         r.add("weight", new JsonPrimitive(weight));
         return(r);
     }
+    private static JsonObject blockentry(String block, String meta,String nbt, int weight){
+        JsonObject r = new JsonObject();
+        r.add("block", new JsonPrimitive(block));
+        r.add("meta", new JsonPrimitive(meta));
+        r.add("nbt", new JsonPrimitive(nbt));
+        r.add("weight", new JsonPrimitive(weight));
+        return(r);
+    }
 
     private void WriteDefaultJson(File jsonpath){
         Gson jsonbuilder = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
@@ -91,6 +124,7 @@ public class ConfigurationReader {
         surface.add(blockentry("minecraft:packed_ice","",3));
         surface.add(blockentry("minecraft:diamond_ore","",2));
         surface.add(blockentry("minecraft:emerald_ore","",1));
+        surface.add(blockentry( "minecraft:chest","","{LootTable:\"minecraft:chests/simple_dungeon\"}",40));
 
         underground.add(blockentry("minecraft:coal_ore","",36));
         underground.add(blockentry("minecraft:iron_ore","",36));
@@ -125,6 +159,7 @@ public class ConfigurationReader {
     private BlockEntry ReadJsonEntry(JsonObject e){
         String block;
         String meta;
+        String nbtjson;
         int weight;
         BlockEntry entry=null;
 
@@ -152,6 +187,21 @@ public class ConfigurationReader {
             meta = ""; //if meta is not provided assume empty string
         }
 
+        if(e.has("nbt")){
+            if(e.get("nbt").isJsonPrimitive()){
+                nbtjson=e.getAsJsonPrimitive("nbt").getAsString();
+            }
+            else{
+                FMLLog.log("wasteland_meteors", Level.ERROR,
+                        "Invalid block object, \"nbt\" included but not a string: " +
+                                e.get("nbt").toString());
+                return null;
+            }
+        }
+        else{
+            nbtjson = ""; //if meta is not provided assume empty string
+        }
+
         if(e.has("weight") && e.get("weight").isJsonPrimitive()){
             if(e.getAsJsonPrimitive("weight").isNumber()){
                 weight = e.getAsJsonPrimitive("weight").getAsInt();
@@ -176,7 +226,7 @@ public class ConfigurationReader {
             return null;
         }
         try{
-            entry=new BlockEntry(ForgeRegistries.BLOCKS.getValue(key),meta,weight);
+            entry=new BlockEntry(ForgeRegistries.BLOCKS.getValue(key),meta,nbtjson,weight);
         }
         catch(NumberInvalidException nan){
             FMLLog.log("wasteland_meteors", Level.WARN,
@@ -193,7 +243,7 @@ public class ConfigurationReader {
         finally {
             if(entry == null){
                 try{
-                    entry=new BlockEntry(ForgeRegistries.BLOCKS.getValue(key),"",weight);
+                    entry=new BlockEntry(ForgeRegistries.BLOCKS.getValue(key),"",nbtjson,weight);
                 }
                 catch(Exception fatal){
                     FMLLog.log("wasteland_meteors", Level.ERROR,
@@ -253,28 +303,36 @@ public class ConfigurationReader {
         }
     }
 
-    public IBlockState getSurfaceBlock(Random rng){
+    public BlockEntry getSurfaceBlock(Random rng){
         long idex = rng.nextLong();
         idex = idex % totalSurfaceWeight;
         for(BlockEntry e : surfaceBlocks){
             if(idex < e.weight){
-                return(e.blockstate);
+                return(e);
             }
             idex -= e.weight;
         }
         //no block found, return the meteorBlock
-        return(WastelandMeteors.meteorBlock.getDefaultState());
+        try {
+            return (new BlockEntry(WastelandMeteors.meteorBlock, "", "", 0));
+        } catch(Exception e){
+            throw(new RuntimeException("Can't make block entry for built in meteor block"));
+        }
     }
-    public IBlockState getUndergroundBlock(Random rng){
+    public BlockEntry getUndergroundBlock(Random rng){
         long idex = rng.nextLong();
         idex = idex % totalUndergroundWeight;
         for(BlockEntry e : undergroundBlocks){
             if(idex < e.weight){
-                return(e.blockstate);
+                return(e);
             }
             idex -= e.weight;
         }
         //no block found, return the meteorBlock
-        return(WastelandMeteors.meteorBlock.getDefaultState());
+        try {
+            return (new BlockEntry(WastelandMeteors.meteorBlock, "", "", 0));
+        } catch(Exception e){
+            throw(new RuntimeException("Can't make block entry for built in meteor block"));
+        }
     }
 }
