@@ -30,8 +30,6 @@ public class MeteorChestGui extends GuiContainer
         meteorChest = te;
         playerInv=player.inventory;
         this.allowUserInput = false;
-        int i = 222;
-        int j = 114;
         this.ySize = 114 + 3 * 18;
     }
 
