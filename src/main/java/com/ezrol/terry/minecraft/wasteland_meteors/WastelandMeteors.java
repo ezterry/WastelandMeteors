@@ -54,6 +54,7 @@ import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -188,15 +189,19 @@ public class WastelandMeteors implements IGuiHandler {
         GameRegistry.addRecipe(new ItemStack(Item.getItemFromBlock(meteorChest), 1),
                 "bbb", "b b", "bbb", 'b', Item.getItemFromBlock(meteorBlock));
 
+        //register our custom presets
+        RegionCore.registerPreset(new ResourceLocation(MODID, "presets/list.txt"));
+    }
+
+    @EventHandler
+    public void postInit(FMLPostInitializationEvent event) {
         //process the configuration
         ConfigurationReader config = new ConfigurationReader(jsonconfig);
 
         //init/register terrain generators
+        //these auto register with ezwastelands
         new SurfaceMeteors(config);
         new UndergroundMeteors(config);
-
-        //register our custom presets
-        RegionCore.registerPreset(new ResourceLocation(MODID, "presets/list.txt"));
     }
 
     public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
