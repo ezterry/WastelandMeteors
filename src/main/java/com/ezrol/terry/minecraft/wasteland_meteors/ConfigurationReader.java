@@ -3,7 +3,6 @@ package com.ezrol.terry.minecraft.wasteland_meteors;
 import com.google.gson.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.command.CommandException;
 import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.server.CommandSetBlock;
@@ -20,14 +19,20 @@ import java.util.ArrayList;
 import java.util.Random;
 
 /**
+ * Class to read in the json configuration, and if it is missing to generate it
  * Created by ezterry on 11/30/16.
  */
 public class ConfigurationReader {
+    @SuppressWarnings("CanBeFinal")
     private ArrayList<BlockEntry> surfaceBlocks = new ArrayList<>();
     private long totalSurfaceWeight = 0;
+    @SuppressWarnings("CanBeFinal")
     private ArrayList<BlockEntry> undergroundBlocks = new ArrayList<>();
     private long totalUndergroundWeight = 0;
 
+    /**
+     * BlockEntry class for storing the current block state/nbt combo
+     */
     public static class BlockEntry{
         private IBlockState blockstate;
         private NBTTagCompound nbt=null;
@@ -63,6 +68,12 @@ public class ConfigurationReader {
             return this.nbt;
         }
     }
+
+    /**
+     * Configuration Reader Constructor for loading a configuration json
+     * @param jsonpath path to the configuration json
+     */
+    @SuppressWarnings("WeakerAccess")
     public ConfigurationReader(File jsonpath){
         if(! jsonpath.exists()){
             FMLLog.log("wasteland_meteors", Level.WARN,
@@ -87,6 +98,14 @@ public class ConfigurationReader {
         ReadJsonData(data);
     }
 
+    /**
+     * Helper funciton to create block entry (without nbt data)
+     *
+     * @param block name of the block
+     * @param meta meta data (numeric or block state string)
+     * @param weight odds this block will be picked
+     * @return json object of the block entry
+     */
     private static JsonObject blockentry(String block, String meta, int weight){
         JsonObject r = new JsonObject();
         r.add("block", new JsonPrimitive(block));
@@ -94,6 +113,16 @@ public class ConfigurationReader {
         r.add("weight", new JsonPrimitive(weight));
         return(r);
     }
+
+    /**
+     * Helper funciton to create block entry (with nbt data)
+     *
+     * @param block name of the block
+     * @param meta meta data (numeric or block state string)
+     * @param nbt a string of the nbt data to be included with the tile entity
+     * @param weight odds this block will be picked
+     * @return json object of the block entry
+     */
     private static JsonObject blockentry(String block, String meta,String nbt, int weight){
         JsonObject r = new JsonObject();
         r.add("block", new JsonPrimitive(block));
@@ -103,48 +132,78 @@ public class ConfigurationReader {
         return(r);
     }
 
+    /**
+     * Create the default json file
+     *
+     * @param jsonpath path to the json config file
+     */
     private void WriteDefaultJson(File jsonpath){
         Gson jsonbuilder = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
         JsonObject root = new JsonObject();
         JsonArray  surface = new JsonArray();
         JsonArray  underground = new JsonArray();
 
-        surface.add(blockentry("minecraft:cobblestone","",40));
-        surface.add(blockentry("wasteland_meteors:meteor_block","",40));
-        surface.add(blockentry("minecraft:stone","variant=andesite",30));
-        surface.add(blockentry("minecraft:stone","variant=granite",30));
-        surface.add(blockentry("minecraft:stone","variant=diorite",30));
-        surface.add(blockentry("minecraft:coal_ore","",20));
-        surface.add(blockentry("minecraft:iron_ore","",18));
-        surface.add(blockentry("minecraft:gravel","",10));
-        surface.add(blockentry("minecraft:sand","",10));
-        surface.add(blockentry("minecraft:ice","",10));
-        surface.add(blockentry("minecraft:gold_ore","",6));
-        surface.add(blockentry("minecraft:lapis_ore","",5));
-        surface.add(blockentry("minecraft:packed_ice","",3));
-        surface.add(blockentry("minecraft:diamond_ore","",2));
-        surface.add(blockentry("minecraft:emerald_ore","",1));
-        surface.add(blockentry( "minecraft:chest","","{LootTable:\"minecraft:chests/simple_dungeon\"}",40));
+        surface.add(blockentry("minecraft:cobblestone","",80));
+        surface.add(blockentry("wasteland_meteors:meteor_block","",80));
+        surface.add(blockentry("minecraft:stone","variant=andesite",60));
+        surface.add(blockentry("minecraft:stone","variant=granite",60));
+        surface.add(blockentry("minecraft:stone","variant=diorite",60));
+        surface.add(blockentry("minecraft:coal_ore","",40));
+        surface.add(blockentry("minecraft:iron_ore","",36));
+        surface.add(blockentry("minecraft:gravel","",20));
+        surface.add(blockentry("minecraft:sand","",20));
+        surface.add(blockentry("minecraft:ice","",20));
+        surface.add(blockentry("minecraft:gold_ore","",12));
+        surface.add(blockentry("minecraft:lapis_ore","",10));
+        surface.add(blockentry("minecraft:packed_ice","",6));
+        surface.add(blockentry("minecraft:diamond_ore","",4));
+        surface.add(blockentry("minecraft:emerald_ore","",2));
+        surface.add(blockentry("wasteland_meteors:meteor_chest","facing=east",
+                "{LootTable:\"wasteland_meteors:chests/minecraft_plants\"}",1));
+        surface.add(blockentry("wasteland_meteors:meteor_chest","facing=west",
+                "{LootTable:\"wasteland_meteors:chests/minecraft_plants\"}",1));
+        surface.add(blockentry("wasteland_meteors:meteor_chest","facing=north",
+                "{LootTable:\"wasteland_meteors:chests/minecraft_plants\"}",1));
+        surface.add(blockentry("wasteland_meteors:meteor_chest","facing=south",
+                "{LootTable:\"wasteland_meteors:chests/minecraft_plants\"}",1));
 
-        underground.add(blockentry("minecraft:coal_ore","",36));
-        underground.add(blockentry("minecraft:iron_ore","",36));
-        underground.add(blockentry("minecraft:dirt","",20));
-        underground.add(blockentry("minecraft:cobblestone","",20));
-        underground.add(blockentry("wasteland_meteors:meteor_block","",20));
-        underground.add(blockentry("minecraft:gravel","",20));
-        underground.add(blockentry("minecraft:sand","",20));
-        underground.add(blockentry("minecraft:gold_ore","",12));
-        underground.add(blockentry("minecraft:lapis_ore","",10));
-        underground.add(blockentry("minecraft:obsidian","",9));
-        underground.add(blockentry("minecraft:diamond_ore","",8));
-        underground.add(blockentry("minecraft:emerald_ore","",4));
+        underground.add(blockentry("minecraft:coal_ore","",1440));
+        underground.add(blockentry("minecraft:iron_ore","",1440));
+        underground.add(blockentry("minecraft:dirt","",800));
+        underground.add(blockentry("minecraft:cobblestone","",1000));
+        underground.add(blockentry("wasteland_meteors:meteor_block","",1000));
+        underground.add(blockentry("minecraft:gravel","",800));
+        underground.add(blockentry("minecraft:sand","",800));
+        underground.add(blockentry("minecraft:gold_ore","",480));
+        underground.add(blockentry("minecraft:lapis_ore","",400));
+        underground.add(blockentry("minecraft:obsidian","",360));
+        underground.add(blockentry("minecraft:diamond_ore","",320));
+        underground.add(blockentry("minecraft:emerald_ore","",160));
+        underground.add(blockentry("wasteland_meteors:meteor_chest","facing=east",
+                "{LootTable:\"wasteland_meteors:chests/minecraft_plants\"}",8));
+        underground.add(blockentry("wasteland_meteors:meteor_chest","facing=west",
+                "{LootTable:\"wasteland_meteors:chests/minecraft_plants\"}",8));
+        underground.add(blockentry("wasteland_meteors:meteor_chest","facing=north",
+                "{LootTable:\"wasteland_meteors:chests/minecraft_plants\"}",8));
+        underground.add(blockentry("wasteland_meteors:meteor_chest","facing=south",
+                "{LootTable:\"wasteland_meteors:chests/minecraft_plants\"}",8));
+        underground.add(blockentry("minecraft:mob_spawner","",
+                "{SpawnData:{id:\"minecraft:guardian\"}}",2));
+        underground.add(blockentry("minecraft:mob_spawner","",
+                "{SpawnData:{id:\"minecraft:skeleton\"}}",2));
+        underground.add(blockentry("minecraft:mob_spawner","",
+                "{SpawnData:{id:\"minecraft:zombie\"}}",4));
+        underground.add(blockentry("minecraft:mob_spawner","",
+                "{SpawnData:{id:\"minecraft:cave_spider\"}}",4));
+        underground.add(blockentry("minecraft:mob_spawner","",
+                "{SpawnData:{id:\"minecraft:witch\"}}",2));
+
 
         root.add("surface",surface);
         root.add("underground",underground);
 
-        FileWriter f=null;
         try {
-            f = new FileWriter(jsonpath);
+            FileWriter f = new FileWriter(jsonpath);
 
             f.write(jsonbuilder.toJson(root));
             f.close();
@@ -248,7 +307,7 @@ public class ConfigurationReader {
                 catch(Exception fatal){
                     FMLLog.log("wasteland_meteors", Level.ERROR,
                             "unable to fallback to block default state : " + fatal.toString());
-                    return null;
+                    entry=null;
                 }
             }
         }

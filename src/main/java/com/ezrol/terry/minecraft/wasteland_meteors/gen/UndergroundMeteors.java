@@ -5,9 +5,10 @@ import com.ezrol.terry.minecraft.wasteland_meteors.WastelandMeteors;
 import com.ezrol.terry.minecraft.wastelands.api.IRegionElement;
 import com.ezrol.terry.minecraft.wastelands.api.Param;
 import com.ezrol.terry.minecraft.wastelands.api.RegionCore;
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
@@ -19,10 +20,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.pow;
+import static java.lang.Math.*;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 /**
+ * Generate meteors on the surface of the wastelands
+ *
  * Created by ezterry on 12/1/16.
  */
 public class UndergroundMeteors implements IRegionElement {
@@ -145,7 +149,6 @@ public class UndergroundMeteors implements IRegionElement {
     }
 
     private void findWorld(long seed){
-        boolean found=false;
         World check;
         if(world != null && world.getSeed() == seed){
             return;
@@ -173,9 +176,7 @@ public class UndergroundMeteors implements IRegionElement {
         int disty;
         int distz;
         float f;
-        Random rand;
         IBlockState meteor = WastelandMeteors.meteorBlock.getDefaultState();
-        IBlockState curBlock;
 
         scale+=3;
         findWorld(worldSeed);
@@ -189,10 +190,9 @@ public class UndergroundMeteors implements IRegionElement {
             distx=abs(x-m.x);
             distz=abs(z-m.z);
             if(distx <= scale && distz <= scale){
-                rand=fillRNG(x,z,worldSeed);
-                if((m.y+(m.scale*2)) > core.addElementHeight(52,m.x,m.z,worldSeed)){
-                    //meteor is too high don't generate
-                    continue;
+                int h=core.addElementHeight(52,m.x,m.z,worldSeed);
+                if((m.y+(m.scale*2)) > h){
+                    m.y= h - (m.scale*2);
                 }
                 if(m.y==0){
                     //we didn't get the update
@@ -204,14 +204,10 @@ public class UndergroundMeteors implements IRegionElement {
                     }
                     disty=abs(y-m.y);
                     f=(float) Math.sqrt((distx * distx) + (disty * disty) + (distz * distz));
-                    if(f < m.scale+0.8){
-                        curBlock=meteor;
-                        if(f <( m.scale-0.8)){
-                            curBlock = ModConfig.getUndergroundBlock(rand);
-                        }
+                    if(f < m.scale+0.5){
                         //don't replace bedrock
                         if(chunkprimer.getBlockState(x & 0x0F, y, z & 0x0F).getBlock() != Blocks.BEDROCK) {
-                            chunkprimer.setBlockState(x & 0x0F, y, z & 0x0F, curBlock);
+                            chunkprimer.setBlockState(x & 0x0F, y, z & 0x0F, meteor);
                         }
                     }
                 }
@@ -220,9 +216,68 @@ public class UndergroundMeteors implements IRegionElement {
         }
     }
 
-    @Override
-    public void additionalTriggers(String s, IChunkGenerator iChunkGenerator, ChunkPos chunkPos, World world, boolean b, ChunkPrimer chunkPrimer, List<Param> list, RegionCore regionCore) {
+    static private int sq(int i){
+        return(i*i);
+    }
 
+    @Override
+    public void additionalTriggers(String event, IChunkGenerator iChunkGenerator, ChunkPos chunkPos, World world, boolean b, ChunkPrimer chunkPrimer, List<Param> p, RegionCore core) {
+        if(event.equals("populate")){
+            int scale = ((Param.IntegerParam)Param.lookUp(p, "scale")).get();
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+            Random rand=fillRNG(chunkPos.getXEnd()-8,chunkPos.getZEnd()-8,world.getSeed());
+            float f;
+
+            scale+=3;
+
+            for(Object o : core.getRegionElements(chunkPos.getXEnd()-8,chunkPos.getZEnd()-8,this, world)) {
+                UndergroundMeteors.meteorLocation m = ((UndergroundMeteors.meteorLocation) o);
+
+                int minX = max(m.x-scale,chunkPos.getXStart());
+                int maxX = min(m.x+scale,chunkPos.getXEnd());
+
+                int minZ = max(m.z-scale,chunkPos.getZStart());
+                int maxZ = min(m.z+scale,chunkPos.getZEnd());
+
+                if(minX > maxX || minZ > maxZ){
+                    continue;
+                }
+                //loop over the meteor bounding box
+                int h=core.addElementHeight(52,m.x,m.z,world.getSeed());
+                if((m.y+(m.scale*2)) > h){
+                    m.y= h - (m.scale*2);
+                }
+                if(m.y==0){
+                    //we didn't get the update
+                    continue;
+                }
+                for(int x=minX;x<=maxX;x++){
+                    for(int y=max(m.y-scale,1);y<min(m.y+scale,254);y++) {
+                        for (int z = minZ; z <= maxZ; z++) {
+                            f=(float) Math.sqrt(sq(x-m.x) + sq(y-m.y) + sq(z-m.z));
+                            if(f < m.scale-0.5){
+                                pos.setPos(x,y,z);
+                                ConfigurationReader.BlockEntry block = ModConfig.getUndergroundBlock(rand);
+                                if(world.getBlockState(pos).getBlock() != WastelandMeteors.meteorBlock){
+                                    continue;
+                                }
+                                world.setBlockState(pos.toImmutable(),block.getBlockState(),2);
+                                NBTTagCompound nbt = block.getNbtData();
+                                if(nbt != null){
+                                    TileEntity te = world.getTileEntity(pos);
+                                    if(te != null) {
+                                        nbt.setInteger("x", pos.getX());
+                                        nbt.setInteger("y", pos.getY());
+                                        nbt.setInteger("z", pos.getZ());
+                                        te.readFromNBT(nbt);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override
