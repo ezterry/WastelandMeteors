@@ -38,7 +38,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.stats.StatList;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -48,13 +47,16 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.ILockableContainer;
 import net.minecraft.world.World;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
+ * The block entry for the meteor_chest
+ * <p>
  * Created by ezterry on 12/21/16.
  */
 public class MeteorChest extends BlockChest {
-    public MeteorChest(){
+    public MeteorChest() {
         super(BlockChest.Type.BASIC);
         this.setRegistryName("meteor_chest");
         this.setUnlocalizedName(this.getRegistryName().toString());
@@ -65,46 +67,43 @@ public class MeteorChest extends BlockChest {
     }
 
     @Override
-    @Nullable
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos)
-    {
+    @Nonnull
+    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
         return NOT_CONNECTED_AABB;
     }
 
+    @SuppressWarnings("NullableProblems")
     @Override
-    public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state)
-    {
+    public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
         //nop
     }
 
     @Override
-    public IBlockState checkForSurroundingChests(World worldIn, BlockPos pos, IBlockState state){
-        return(state);
+    @Nullable
+    @SuppressWarnings("NullableProblems")
+    public IBlockState checkForSurroundingChests(World worldIn, BlockPos pos, IBlockState state) {
+        return (state);
     }
 
     @Override
-    public boolean canPlaceBlockAt(World worldIn, BlockPos pos){
-        return(true);
+    public boolean canPlaceBlockAt(World worldIn, BlockPos pos) {
+        return (true);
     }
 
     @Override
-    public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos p_189540_5_){
-
+    @SuppressWarnings("NullableProblems")
+    public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos p_189540_5_) {
+        //nop
     }
 
     @Override
-    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing heldItem, float side, float hitX, float hitY)
-    {
-        if (worldIn.isRemote)
-        {
+    public boolean onBlockActivated(World worldIn, @Nonnull BlockPos pos, IBlockState state, @Nonnull EntityPlayer playerIn, EnumHand hand, EnumFacing heldItem, float side, float hitX, float hitY) {
+        if (worldIn.isRemote) {
             return true;
-        }
-        else
-        {
+        } else {
             ILockableContainer ilockablecontainer = this.getLockableContainer(worldIn, pos);
 
-            if (ilockablecontainer != null)
-            {
+            if (ilockablecontainer != null) {
                 playerIn.openGui(WastelandMeteors.instance, 0, worldIn, pos.getX(), pos.getY(), pos.getZ());
                 playerIn.addStat(StatList.CHEST_OPENED);
             }
@@ -115,30 +114,26 @@ public class MeteorChest extends BlockChest {
 
     @Override
     @Nullable
-    public ILockableContainer getContainer(World world, BlockPos chestPos, boolean p_189418_3_){
+    public ILockableContainer getContainer(World world, @Nonnull BlockPos chestPos, boolean p_189418_3_) {
         TileEntity tileentity = world.getTileEntity(chestPos);
 
-        if (!(tileentity instanceof TileMeteorChest))
-        {
+        if (!(tileentity instanceof TileMeteorChest)) {
             return null;
         }
-        if (!p_189418_3_ && this.isBlocked(world, chestPos)){
+        if (!p_189418_3_ && this.isBlocked(world, chestPos)) {
             return null;
         }
-        return (TileMeteorChest)tileentity;
+        return (TileMeteorChest) tileentity;
     }
 
-    private boolean isBlocked(World worldIn, BlockPos pos)
-    {
-        if(worldIn.getBlockState(pos.up()).isSideSolid(worldIn, pos.up(), EnumFacing.DOWN)){
+    private boolean isBlocked(World worldIn, @Nonnull BlockPos pos) {
+        if (worldIn.getBlockState(pos.up()).isSideSolid(worldIn, pos.up(), EnumFacing.DOWN)) {
             return true;
         }
-        for (Entity entity : worldIn.getEntitiesWithinAABB(EntityOcelot.class, new AxisAlignedBB((double)pos.getX(), (double)(pos.getY() + 1), (double)pos.getZ(), (double)(pos.getX() + 1), (double)(pos.getY() + 2), (double)(pos.getZ() + 1))))
-        {
-            EntityOcelot entityocelot = (EntityOcelot)entity;
+        for (Entity entity : worldIn.getEntitiesWithinAABB(EntityOcelot.class, new AxisAlignedBB((double) pos.getX(), (double) (pos.getY() + 1), (double) pos.getZ(), (double) (pos.getX() + 1), (double) (pos.getY() + 2), (double) (pos.getZ() + 1)))) {
+            EntityOcelot entityocelot = (EntityOcelot) entity;
 
-            if (entityocelot.isSitting())
-            {
+            if (entityocelot.isSitting()) {
                 return true;
             }
         }
@@ -147,15 +142,13 @@ public class MeteorChest extends BlockChest {
     }
 
     @Override
-    public TileEntity createNewTileEntity(World worldIn, int meta)
-    {
+    public TileEntity createNewTileEntity(World worldIn, int meta) {
         return new TileMeteorChest();
     }
 
     @Override
-    public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack)
-    {
-        EnumFacing enumfacing = EnumFacing.getHorizontal(MathHelper.floor((double)(placer.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3).getOpposite();
+    public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+        EnumFacing enumfacing = EnumFacing.getHorizontal(MathHelper.floor((double) (placer.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3).getOpposite();
         state = state.withProperty(FACING, enumfacing);
 
         worldIn.setBlockState(pos, state, 3);
