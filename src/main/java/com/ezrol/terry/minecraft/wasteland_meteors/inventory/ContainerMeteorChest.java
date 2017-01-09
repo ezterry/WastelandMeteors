@@ -26,6 +26,7 @@
 
 package com.ezrol.terry.minecraft.wasteland_meteors.inventory;
 
+import invtweaks.api.container.ChestContainer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
@@ -38,6 +39,7 @@ import javax.annotation.Nonnull;
  * Inventory object to hold the contents of the meteor chest
  * Created by ezterry on 12/12/16.
  */
+@ChestContainer(rowSize=6)
 public class ContainerMeteorChest extends Container {
     private final IInventory meteorInv;
 
