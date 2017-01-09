@@ -5,7 +5,7 @@
   "description": "Addon to EzWastelands to spawn ore filled meteors",
   "version": "${version}",
   "mcversion": "1.11",
-  "url": "",
+  "url": "https://minecraft.curseforge.com/projects/wasteland-meteors",
   "updateUrl": "",
   "authorList": ["EzTerry"],
   "credits": "meteors in the wastelands",
