@@ -1,0 +1,16 @@
+{
+  "result": {
+    "item": "wasteland_meteors:meteor_chest"
+  },
+  "pattern": [
+    "bbb",
+    "b b",
+    "bbb"
+  ],
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "b": {
+      "item": "wasteland_meteors:meteor_block"
+    }
+  }
+}

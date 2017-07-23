@@ -40,6 +40,7 @@ public class MeteorBlock extends Block {
         this.setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
         this.setHarvestLevel("pickaxe", 2);
         this.setRegistryName("meteor_block");
+        //noinspection ConstantConditions
         this.setUnlocalizedName(this.getRegistryName().toString());
     }
 }

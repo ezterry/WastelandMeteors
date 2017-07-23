@@ -1,0 +1,16 @@
+{
+  "result": {
+    "item": "wasteland_meteors:meteor_stairs"
+  },
+  "pattern": [
+    "b  ",
+    "bb ",
+    "bbb"
+  ],
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "b": {
+      "item": "wasteland_meteors:meteor_block"
+    }
+  }
+}

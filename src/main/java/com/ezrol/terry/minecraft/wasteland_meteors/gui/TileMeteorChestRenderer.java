@@ -46,7 +46,8 @@ public class TileMeteorChestRenderer extends TileEntitySpecialRenderer<TileMeteo
     public TileMeteorChestRenderer() {
     }
 
-    public void renderTileEntityAt(TileMeteorChest te, double x, double y, double z, float partialTicks, int destroyStage) {
+    @Override
+    public void render(TileMeteorChest te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         ModelChest modelchest;
         GlStateManager.enableDepth();
         GlStateManager.depthFunc(515);

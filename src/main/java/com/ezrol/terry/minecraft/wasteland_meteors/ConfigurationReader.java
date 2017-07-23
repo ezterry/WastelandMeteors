@@ -36,9 +36,8 @@ import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileReader;
@@ -58,6 +57,7 @@ public class ConfigurationReader {
     @SuppressWarnings("CanBeFinal")
     private ArrayList<BlockEntry> undergroundBlocks = new ArrayList<>();
     private long totalUndergroundWeight = 0;
+    private Logger log;
 
     /**
      * Configuration Reader Constructor for loading a configuration json
@@ -66,9 +66,9 @@ public class ConfigurationReader {
      */
     @SuppressWarnings("WeakerAccess")
     public ConfigurationReader(File jsonpath) {
+        log = WastelandMeteors.modLog;
         if (!jsonpath.exists()) {
-            FMLLog.log("wasteland_meteors", Level.WARN,
-                    "JSON Block Configuration file missing, generating default");
+            log.warn("JSON Block Configuration file missing, generating default");
             WriteDefaultJson(jsonpath);
         }
 
@@ -78,10 +78,8 @@ public class ConfigurationReader {
             FileReader f = new FileReader(jsonpath);
             data = new Gson().fromJson(f, JsonObject.class);
         } catch (IOException e) {
-            FMLLog.log("wasteland_meteors", Level.ERROR,
-                    "Error reading the json file");
-            FMLLog.log("wasteland_meteors", Level.ERROR,
-                    e.toString());
+            log.error("Error reading the json file");
+            log.error(e.toString());
             data = new JsonObject();
         }
 
@@ -143,6 +141,7 @@ public class ConfigurationReader {
         surface.add(blockentry("minecraft:gravel", "", 20));
         surface.add(blockentry("minecraft:sand", "", 20));
         surface.add(blockentry("minecraft:ice", "", 20));
+        surface.add(blockentry("minecraft:clay", "", 18));
         surface.add(blockentry("minecraft:gold_ore", "", 12));
         surface.add(blockentry("minecraft:lapis_ore", "", 10));
         surface.add(blockentry("minecraft:packed_ice", "", 6));
@@ -164,6 +163,7 @@ public class ConfigurationReader {
         underground.add(blockentry("wasteland_meteors:meteor_block", "", 1000));
         underground.add(blockentry("minecraft:gravel", "", 800));
         underground.add(blockentry("minecraft:sand", "", 800));
+        underground.add(blockentry("minecraft:clay", "", 510));
         underground.add(blockentry("minecraft:gold_ore", "", 480));
         underground.add(blockentry("minecraft:lapis_ore", "", 400));
         underground.add(blockentry("minecraft:obsidian", "", 360));
@@ -198,10 +198,8 @@ public class ConfigurationReader {
             f.write(jsonbuilder.toJson(root));
             f.close();
         } catch (IOException e) {
-            FMLLog.log("wasteland_meteors", Level.ERROR,
-                    "Error writing to json file");
-            FMLLog.log("wasteland_meteors", Level.ERROR,
-                    e.toString());
+            log.error("Error writing to json file");
+            log.error(e.toString());
         }
     }
 
@@ -215,8 +213,7 @@ public class ConfigurationReader {
         if (e.has("block") && e.get("block").isJsonPrimitive()) {
             block = e.getAsJsonPrimitive("block").getAsString();
         } else {
-            FMLLog.log("wasteland_meteors", Level.ERROR,
-                    "Invalid block object, requires \"block\" name: " + e.toString());
+            log.error("Invalid block object, requires \"block\" name: " + e.toString());
             return null;
         }
 
@@ -224,8 +221,7 @@ public class ConfigurationReader {
             if (e.get("meta").isJsonPrimitive()) {
                 meta = e.getAsJsonPrimitive("meta").getAsString();
             } else {
-                FMLLog.log("wasteland_meteors", Level.ERROR,
-                        "Invalid block object, \"meta\" included but not a string: " +
+                log.error("Invalid block object, \"meta\" included but not a string: " +
                                 e.get("meta").toString());
                 return null;
             }
@@ -237,8 +233,7 @@ public class ConfigurationReader {
             if (e.get("nbt").isJsonPrimitive()) {
                 nbtjson = e.getAsJsonPrimitive("nbt").getAsString();
             } else {
-                FMLLog.log("wasteland_meteors", Level.ERROR,
-                        "Invalid block object, \"nbt\" included but not a string: " +
+                log.error("Invalid block object, \"nbt\" included but not a string: " +
                                 e.get("nbt").toString());
                 return null;
             }
@@ -250,42 +245,34 @@ public class ConfigurationReader {
             if (e.getAsJsonPrimitive("weight").isNumber()) {
                 weight = e.getAsJsonPrimitive("weight").getAsInt();
             } else {
-                FMLLog.log("wasteland_meteors", Level.ERROR,
-                        "wight needs to be an integer but got: " +
+                log.error("wight needs to be an integer but got: " +
                                 e.get("weight").toString());
                 return null;
             }
         } else {
-            FMLLog.log("wasteland_meteors", Level.ERROR,
-                    "Invalid block object, requires \"weight\" name: " + e.toString());
+            log.error("Invalid block object, requires \"weight\" name: " + e.toString());
             return null;
         }
 
         ResourceLocation key = new ResourceLocation(block);
         if (!ForgeRegistries.BLOCKS.containsKey(key)) {
-            FMLLog.log("wasteland_meteors", Level.ERROR,
-                    "unable to find block ignoring: " + block);
+            log.error("unable to find block ignoring: " + block);
             return null;
         }
         try {
             entry = new BlockEntry(ForgeRegistries.BLOCKS.getValue(key), meta, nbtjson, weight);
         } catch (NumberInvalidException nan) {
-            FMLLog.log("wasteland_meteors", Level.WARN,
-                    "invalid metadata number provided, consider using block states: " + meta);
-            FMLLog.log("wasteland_meteors", Level.WARN,
-                    "using default block state for " + block);
+            log.warn("invalid metadata number provided, consider using block states: " + meta);
+            log.warn("using default block state for " + block);
         } catch (InvalidBlockStateException ivblk) {
-            FMLLog.log("wasteland_meteors", Level.WARN,
-                    "invalid block state : " + meta);
-            FMLLog.log("wasteland_meteors", Level.WARN,
-                    "using default block state for " + block);
+            log.warn("invalid block state : " + meta);
+            log.warn("using default block state for " + block);
         } finally {
             if (entry == null) {
                 try {
                     entry = new BlockEntry(ForgeRegistries.BLOCKS.getValue(key), "", nbtjson, weight);
                 } catch (Exception fatal) {
-                    FMLLog.log("wasteland_meteors", Level.ERROR,
-                            "unable to fallback to block default state : " + fatal.toString());
+                    log.error("unable to fallback to block default state : " + fatal.toString());
                     entry = null;
                 }
             }
@@ -303,8 +290,7 @@ public class ConfigurationReader {
             blockArray = data.getAsJsonArray("surface");
             for (JsonElement e : blockArray) {
                 if (!e.isJsonObject()) {
-                    FMLLog.log("wasteland_meteors", Level.ERROR,
-                            "Expected block entry object in json got: " + e.toString());
+                    log.error("Expected block entry object in json got: " + e.toString());
                     continue;
                 }
                 current = ReadJsonEntry(e.getAsJsonObject());
@@ -314,8 +300,7 @@ public class ConfigurationReader {
                 }
             }
         } else {
-            FMLLog.log("wasteland_meteors", Level.WARN,
-                    "No surface meteor block data in JSON config");
+            log.warn("No surface meteor block data in JSON config");
         }
 
         //read underground blocks
@@ -324,8 +309,7 @@ public class ConfigurationReader {
             blockArray = data.getAsJsonArray("underground");
             for (JsonElement e : blockArray) {
                 if (!e.isJsonObject()) {
-                    FMLLog.log("wasteland_meteors", Level.ERROR,
-                            "Expected block entry object in json got: " + e.toString());
+                    log.error("Expected block entry object in json got: " + e.toString());
                     continue;
                 }
                 current = ReadJsonEntry(e.getAsJsonObject());
@@ -335,8 +319,7 @@ public class ConfigurationReader {
                 }
             }
         } else {
-            FMLLog.log("wasteland_meteors", Level.WARN,
-                    "No underground meteor block data in JSON config");
+            log.warn("No underground meteor block data in JSON config");
         }
     }
 
@@ -393,8 +376,7 @@ public class ConfigurationReader {
                 try {
                     this.nbt = JsonToNBT.getTagFromJson(nbt);
                 } catch (NBTException nbtexception) {
-                    FMLLog.log("wasteland_meteors", Level.WARN,
-                            "Error reading NBT data: " + nbtexception.toString());
+                    WastelandMeteors.modLog.warn("Error reading NBT data: " + nbtexception.toString());
                 }
             }
             this.weight = weight;

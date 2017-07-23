@@ -44,13 +44,11 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemSlab;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -58,10 +56,12 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 
@@ -71,8 +71,8 @@ import java.io.File;
 @Mod(modid = WastelandMeteors.MODID,
         name = "Wasteland  Meteors",
         version = WastelandMeteors.VERSION,
-        acceptedMinecraftVersions = "[1.11]",
-        dependencies = "required-after:ezwastelands@[1.11-1.2,)")
+        acceptedMinecraftVersions = "[1.12]",
+        dependencies = "required-after:ezwastelands@[1.12-1.3,)")
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class WastelandMeteors implements IGuiHandler {
     public static final String MODID = "wasteland_meteors";
@@ -85,6 +85,7 @@ public class WastelandMeteors implements IGuiHandler {
     public static WastelandMeteors instance;
     private static File jsonconfig;
     private boolean isServer;
+    public static Logger modLog;
 
     /**
      * Transform the "recommended config" to a .json for our actual configuration
@@ -108,49 +109,58 @@ public class WastelandMeteors implements IGuiHandler {
         ItemBlock meteorStairsItem;
         ItemBlock meteorChestItem;
 
+        modLog=event.getModLog();
+
         WastelandMeteors.instance = this;
         //json config file
         jsonconfig = TransformToJsonFile(event.getSuggestedConfigurationFile());
-        FMLLog.log("wasteland_meteors", Level.INFO,
-                "Block Customization Json: " + jsonconfig.getPath());
+        modLog.log(Level.INFO,"Block Customization Json: " + jsonconfig.getPath());
 
         //register meteor_block
         meteorBlock = new MeteorBlock(Material.ROCK);
-        GameRegistry.register(meteorBlock);
+        ForgeRegistries.BLOCKS.register(meteorBlock);
         meteorBlockItem = new ItemBlock(meteorBlock);
+        //noinspection ConstantConditions
         meteorBlockItem.setRegistryName(meteorBlock.getRegistryName());
+        //noinspection ConstantConditions
         meteorBlockItem.setUnlocalizedName(meteorBlockItem.getRegistryName().toString());
         //System.out.println(meteorBlockItem.getRegistryName().toString());
-        GameRegistry.register(meteorBlockItem);
+        ForgeRegistries.ITEMS.register(meteorBlockItem);
 
         //register meteor_slab
         meteorBlockHalf = new MeteorBlockSlab.Half(Material.ROCK);
         meteorBlockFull = new MeteorBlockSlab.Double(Material.ROCK);
-        GameRegistry.register(meteorBlockHalf);
-        GameRegistry.register(meteorBlockFull);
+        ForgeRegistries.BLOCKS.register(meteorBlockHalf);
+        ForgeRegistries.BLOCKS.register(meteorBlockFull);
         meteorSlabItem = new ItemSlab(meteorBlockHalf, meteorBlockHalf, meteorBlockFull);
+        //noinspection ConstantConditions
         meteorSlabItem.setRegistryName(meteorBlockHalf.getRegistryName());
+        //noinspection ConstantConditions
         meteorSlabItem.setUnlocalizedName(meteorSlabItem.getRegistryName().toString());
         //System.out.println(meteorSlab.getRegistryName().toString());
-        GameRegistry.register(meteorSlabItem);
+        ForgeRegistries.ITEMS.register(meteorSlabItem);
 
         //register meteor_stairs
         meteorBlockStairs = new MeteorStairs(meteorBlock.getDefaultState());
-        GameRegistry.register(meteorBlockStairs);
+        ForgeRegistries.BLOCKS.register(meteorBlockStairs);
         meteorStairsItem = new ItemBlock(meteorBlockStairs);
+        //noinspection ConstantConditions
         meteorStairsItem.setRegistryName(meteorBlockStairs.getRegistryName());
+        //noinspection ConstantConditions
         meteorStairsItem.setUnlocalizedName(meteorStairsItem.getRegistryName().toString());
         //System.out.println(meteorStairsItem.getRegistryName().toString());
-        GameRegistry.register(meteorStairsItem);
+        ForgeRegistries.ITEMS.register(meteorStairsItem);
 
         //register meteor_chest
         meteorChest = new MeteorChest();
-        GameRegistry.register(meteorChest);
+        ForgeRegistries.BLOCKS.register(meteorChest);
         meteorChestItem = new ItemBlock(meteorChest);
+        //noinspection ConstantConditions
         meteorChestItem.setRegistryName(meteorChest.getRegistryName());
+        //noinspection ConstantConditions
         meteorChestItem.setUnlocalizedName(meteorChestItem.getRegistryName().toString());
         //System.out.println(meteorChestItem.getRegistryName().toString());
-        GameRegistry.register(meteorChestItem);
+        ForgeRegistries.ITEMS.register(meteorChestItem);
         GameRegistry.registerTileEntity(TileMeteorChest.class, "tile_meteor_chest");
 
         //register gui handler
@@ -178,16 +188,6 @@ public class WastelandMeteors implements IGuiHandler {
             renderItem.getItemModelMesher().register(Item.getItemFromBlock(meteorChest), 0,
                     new ModelResourceLocation(MODID + ":" + "meteor_chest", "inventory"));
         }
-
-        //Register slab recipe
-        GameRegistry.addRecipe(new ItemStack(Item.getItemFromBlock(meteorBlockHalf), 6),
-                "bbb", 'b', Item.getItemFromBlock(meteorBlock));
-        //Register stair recipe
-        GameRegistry.addRecipe(new ItemStack(Item.getItemFromBlock(meteorBlockStairs), 4),
-                "b  ", "bb ", "bbb", 'b', Item.getItemFromBlock(meteorBlock));
-        //Register chest recipe
-        GameRegistry.addRecipe(new ItemStack(Item.getItemFromBlock(meteorChest), 1),
-                "bbb", "b b", "bbb", 'b', Item.getItemFromBlock(meteorBlock));
 
         //register our custom presets
         RegionCore.registerPreset(new ResourceLocation(MODID, "presets/list.txt"));

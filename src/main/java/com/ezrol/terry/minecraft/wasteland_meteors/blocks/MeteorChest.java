@@ -59,6 +59,7 @@ public class MeteorChest extends BlockChest {
     public MeteorChest() {
         super(BlockChest.Type.BASIC);
         this.setRegistryName("meteor_chest");
+        //noinspection ConstantConditions
         this.setUnlocalizedName(this.getRegistryName().toString());
         this.setResistance(12.0F);
         this.setHardness((float) 3.0);

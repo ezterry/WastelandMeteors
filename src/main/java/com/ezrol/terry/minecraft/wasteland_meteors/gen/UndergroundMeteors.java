@@ -32,15 +32,16 @@ import com.ezrol.terry.minecraft.wastelands.api.IRegionElement;
 import com.ezrol.terry.minecraft.wastelands.api.Param;
 import com.ezrol.terry.minecraft.wastelands.api.RegionCore;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkPrimer;
-import net.minecraft.world.chunk.IChunkGenerator;
-import net.minecraftforge.common.DimensionManager;
+import net.minecraft.world.gen.IChunkGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +56,6 @@ import static java.lang.Math.*;
  */
 public class UndergroundMeteors implements IRegionElement {
     private ConfigurationReader ModConfig;
-    private World world = null;
 
     public UndergroundMeteors(ConfigurationReader c) {
         RegionCore.register(this, false);
@@ -111,13 +111,13 @@ public class UndergroundMeteors implements IRegionElement {
     }
 
     @Override
-    public List<Object> calcElements(Random random, int x, int z, List<Param> list, RegionCore regionCore) {
+    public List<Object> calcElements(Random random, int x, int z, RegionCore core){
         List<Object> lst = new ArrayList<>();
-        if (((Param.BooleanParam) Param.lookUp(list, "enable")).get()) {
+        if (((Param.BooleanParam) core.lookupParam(this, "enable")).get()) {
             //we have surface meteors enabled
             int count = 0;
-            int scale = ((Param.IntegerParam) Param.lookUp(list, "scale")).get();
-            float f = ((Param.FloatParam) Param.lookUp(list, "frequency")).get();
+            int scale = ((Param.IntegerParam) core.lookupParam(this, "scale")).get();
+            float f = ((Param.FloatParam) core.lookupParam(this, "frequency")).get();
 
             int try1 = random.nextInt(3);
             int try2 = random.nextInt(3);
@@ -168,30 +168,9 @@ public class UndergroundMeteors implements IRegionElement {
         return (r);
     }
 
-    private void findWorld(long seed) {
-        World check;
-        if (world != null && world.getSeed() == seed) {
-            return;
-        }
-        check = DimensionManager.getWorld(0);
-        if (check.getSeed() == seed) {
-            world = check;
-        }
-        if (world != null && world.getSeed() == seed) {
-            return;
-        }
-        for (int id : DimensionManager.getIDs()) {
-            check = DimensionManager.getWorld(id);
-            if (check.getSeed() == seed) {
-                world = check;
-
-            }
-        }
-    }
-
     @Override
-    public void postFill(ChunkPrimer chunkprimer, int height, int x, int z, long worldSeed, List<Param> p, RegionCore core) {
-        int scale = ((Param.IntegerParam) Param.lookUp(p, "scale")).get();
+    public void postFill(ChunkPrimer chunkprimer, int height, int x, int z, RegionCore core){
+        int scale = ((Param.IntegerParam) core.lookupParam(this, "scale")).get();
         int distx;
         int disty;
         int distz;
@@ -199,18 +178,13 @@ public class UndergroundMeteors implements IRegionElement {
         IBlockState meteor = WastelandMeteors.meteorBlock.getDefaultState();
 
         scale += 3;
-        findWorld(worldSeed);
 
-        if (world == null) {
-            return; //can't find world thus can't generate items
-        }
-
-        for (Object o : core.getRegionElements(x, z, this, world)) {
+        for (Object o : core.getRegionElements(x, z, this)) {
             meteorLocation m = ((meteorLocation) o);
             distx = abs(x - m.x);
             distz = abs(z - m.z);
             if (distx <= scale && distz <= scale) {
-                int h = core.addElementHeight(52, m.x, m.z, worldSeed);
+                int h = core.addElementHeight(m.x, m.z);
                 if ((m.y + (m.scale * 2)) > h) {
                     m.y = h - (m.scale * 2);
                 }
@@ -237,16 +211,16 @@ public class UndergroundMeteors implements IRegionElement {
     }
 
     @Override
-    public void additionalTriggers(String event, IChunkGenerator iChunkGenerator, ChunkPos chunkPos, World world, boolean b, ChunkPrimer chunkPrimer, List<Param> p, RegionCore core) {
+    public void additionalTriggers(String event, IChunkGenerator iChunkGenerator, ChunkPos chunkPos, ChunkPrimer chunkPrimer, RegionCore core){
         if (event.equals("populate")) {
-            int scale = ((Param.IntegerParam) Param.lookUp(p, "scale")).get();
+            int scale = ((Param.IntegerParam) core.lookupParam(this, "scale")).get();
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-            Random rand = fillRNG(chunkPos.getXEnd() - 8, chunkPos.getZEnd() - 8, world.getSeed());
+            Random rand = fillRNG(chunkPos.getXEnd() - 8, chunkPos.getZEnd() - 8, core.getWorld().getSeed());
             float f;
 
             scale += 3;
 
-            for (Object o : core.getRegionElements(chunkPos.getXEnd() - 8, chunkPos.getZEnd() - 8, this, world)) {
+            for (Object o : core.getRegionElements(chunkPos.getXEnd() - 8, chunkPos.getZEnd() - 8,this)) {
                 UndergroundMeteors.meteorLocation m = ((UndergroundMeteors.meteorLocation) o);
 
                 int minX = max(m.x - scale, chunkPos.getXStart());
@@ -259,7 +233,7 @@ public class UndergroundMeteors implements IRegionElement {
                     continue;
                 }
                 //loop over the meteor bounding box
-                int h = core.addElementHeight(52, m.x, m.z, world.getSeed());
+                int h = core.addElementHeight( m.x, m.z);
                 if ((m.y + (m.scale * 2)) > h) {
                     m.y = h - (m.scale * 2);
                 }
@@ -267,6 +241,8 @@ public class UndergroundMeteors implements IRegionElement {
                     //we didn't get the update
                     continue;
                 }
+
+                Chunk currentChunk = core.getWorld().getChunkFromChunkCoords(chunkPos.x,chunkPos.z);
                 for (int x = minX; x <= maxX; x++) {
                     for (int y = max(m.y - scale, 1); y < min(m.y + scale, 254); y++) {
                         for (int z = minZ; z <= maxZ; z++) {
@@ -274,13 +250,13 @@ public class UndergroundMeteors implements IRegionElement {
                             if (f < m.scale - 0.5) {
                                 pos.setPos(x, y, z);
                                 ConfigurationReader.BlockEntry block = ModConfig.getUndergroundBlock(rand);
-                                if (world.getBlockState(pos).getBlock() != WastelandMeteors.meteorBlock) {
+                                if (currentChunk.getBlockState(pos).getBlock() != WastelandMeteors.meteorBlock) {
                                     continue;
                                 }
-                                world.setBlockState(pos.toImmutable(), block.getBlockState(), 2);
+                                currentChunk.setBlockState(pos.toImmutable(), block.getBlockState());
                                 NBTTagCompound nbt = block.getNbtData();
                                 if (nbt != null) {
-                                    TileEntity te = world.getTileEntity(pos);
+                                    TileEntity te = currentChunk.getTileEntity(pos,Chunk.EnumCreateEntityType.IMMEDIATE);
                                     if (te != null) {
                                         nbt.setInteger("x", pos.getX());
                                         nbt.setInteger("y", pos.getY());
@@ -297,13 +273,18 @@ public class UndergroundMeteors implements IRegionElement {
     }
 
     @Override
-    public BlockPos getStrongholdGen(World world, boolean b, BlockPos blockPos, List<Param> list, RegionCore regionCore) {
+    public BlockPos getNearestStructure(String s, BlockPos blockPos, boolean b, RegionCore regionCore) {
         return null;
     }
 
     @Override
-    public BlockPos getVillageGen(World world, boolean b, BlockPos blockPos, List<Param> list, RegionCore regionCore) {
-        return null;
+    public boolean isInsideStructure(String s, BlockPos blockPos, RegionCore regionCore) {
+        return false;
+    }
+
+    @Override
+    public List<Biome.SpawnListEntry> getSpawnable(List<Biome.SpawnListEntry> list, EnumCreatureType enumCreatureType, BlockPos blockPos, RegionCore regionCore) {
+        return list;
     }
 
     private class meteorLocation {

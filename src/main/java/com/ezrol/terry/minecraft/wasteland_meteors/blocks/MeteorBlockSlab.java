@@ -64,6 +64,7 @@ public abstract class MeteorBlockSlab extends BlockSlab {
         this.setSoundType(SoundType.STONE);
         this.setResistance(12.0F);
         this.setHarvestLevel("pickaxe", 2);
+        //noinspection ConstantConditions
         this.setUnlocalizedName(this.getRegistryName().toString());
         this.setDefaultState(iblockstate.withProperty(VARIANT, MeteorBlockSlab.Variant.DEFAULT));
         if (!this.isDouble()) {

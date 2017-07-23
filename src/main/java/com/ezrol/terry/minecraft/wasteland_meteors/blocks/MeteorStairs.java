@@ -45,6 +45,7 @@ public class MeteorStairs extends BlockStairs {
         this.setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
         this.setHarvestLevel("pickaxe", 2);
         this.setRegistryName("meteor_stairs");
+        //noinspection ConstantConditions
         this.setUnlocalizedName(this.getRegistryName().toString());
     }
 }
